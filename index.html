@@ -26,26 +26,60 @@
     color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:clamp(10px,1.6vw,15px);opacity:.85;text-align:right;
     text-shadow:1px 1px 0 #000;pointer-events:none;max-width:62vw}
 
+  #tap{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translateX(-50%);z-index:70;
+    color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:clamp(12px,2.2vw,16px);opacity:.9;letter-spacing:.5px;
+    text-shadow:1px 1px 0 #000;pointer-events:none}
+
   #debt{position:fixed;z-index:50;pointer-events:none;line-height:1;font-family:Impact,'Arial Black',sans-serif;
-    left:calc(16px + env(safe-area-inset-left));bottom:calc(14px + env(safe-area-inset-bottom));max-width:94vw;
+    left:calc(16px + env(safe-area-inset-left));bottom:calc(14px + env(safe-area-inset-bottom));max-width:64vw;
     text-shadow:3px 3px 0 #000,0 0 9px #000}
-  #debt .lbl{font-size:clamp(13px,2.4vw,26px);letter-spacing:.4px;color:#ff5151}
-  #debt .t{font-size:clamp(46px,12vw,132px);margin-top:3px;color:#ff1212;white-space:nowrap}
+  #debt .lbl{font-size:clamp(12px,2.2vw,24px);letter-spacing:.4px;color:#ff5151}
+  #debt .t{font-size:clamp(40px,10vw,120px);margin-top:3px;color:#ff1212;white-space:nowrap}
+
+  #gamble{position:fixed;right:calc(14px + env(safe-area-inset-right));bottom:calc(20px + env(safe-area-inset-bottom));z-index:66;
+    display:none;font-family:Impact,'Arial Black',sans-serif;font-size:clamp(20px,5vw,38px);letter-spacing:1px;color:#fff;
+    background:#d4061a;border:4px solid #fff;border-radius:10px;padding:8px 16px;cursor:pointer;
+    box-shadow:0 0 0 4px #000,6px 6px 0 #000;transform:rotate(2deg);animation:blink .55s steps(2) infinite}
+  @keyframes blink{50%{background:#ffd400;color:#000}}
+
+  #slot{position:fixed;inset:0;z-index:90;display:none;flex-direction:column;align-items:center;justify-content:center;
+    gap:14px;background:rgba(0,0,0,.97);padding:18px;text-align:center}
+  #slot .sbar{font-family:Impact,'Arial Black',sans-serif;color:#ffd400;font-size:clamp(26px,8vw,60px);
+    text-shadow:3px 3px 0 #d4061a;transform:rotate(-1deg)}
+  #slot .reels{display:flex;gap:8px}
+  #slot .reels img{width:clamp(76px,26vw,150px);height:clamp(76px,26vw,150px);object-fit:cover;background:#111;border:5px solid #fff;border-radius:8px}
+  #sresult{font-family:Impact,'Arial Black',sans-serif;color:#fff;font-size:clamp(22px,7vw,52px);min-height:1.2em;text-shadow:2px 2px 0 #000;text-transform:uppercase}
+  #slot .scredit{font-family:Impact,'Arial Black',sans-serif;color:#ff4d4d;font-size:clamp(16px,4.4vw,30px)}
+  #spin{font-family:Impact,'Arial Black',sans-serif;font-size:clamp(22px,6.5vw,46px);color:#000;background:#ffd400;
+    border:5px solid #fff;border-radius:10px;padding:10px 30px;cursor:pointer;box-shadow:5px 5px 0 #000}
+  #sclose{font-family:Arial,Helvetica,sans-serif;color:#9a9a9a;background:none;border:none;font-size:clamp(13px,3vw,18px);cursor:pointer;text-decoration:underline}
 </style>
 </head>
 <body>
 <div id="bg"></div>
 <div id="stage"><div id="intro"><img src="assets/intro.gif" alt=""><div id="cap"></div></div></div>
 <div id="corner">6evan.com property of evan vasquez always</div>
+<div id="tap">tap for sound</div>
 <div id="debt"><div class="lbl">money you owe me for being in this website</div><div class="t" id="amt">$0</div></div>
+
+<button id="gamble">GAMBLE</button>
+<div id="slot">
+  <div class="sbar">6 EVAN CASINO</div>
+  <div class="reels"><img id="r0" alt=""><img id="r1" alt=""><img id="r2" alt=""></div>
+  <div id="sresult">spin to win (you wont)</div>
+  <div class="scredit">SOCIAL CREDIT: <span id="sc">1000</span></div>
+  <button id="spin">SPIN  -50</button>
+  <button id="sclose">leave the casino</button>
+</div>
 
 <script>
   var IMGS=["assets/img1.jpg","assets/img2.jpeg","assets/img3.jpeg","assets/img4.jpg","assets/img5.jpeg","assets/img6.jpeg","assets/img7.jpeg","assets/img8.jpeg","assets/img9.jpeg","assets/img10.jpeg","assets/img11.png","assets/img12.jpeg","assets/img13.webp"];
   IMGS.forEach(function(s){var i=new Image();i.src=s;});
   var stage=document.getElementById('stage');
-  var timer, last=-1, introDone=false;
+  var timer, last=-1, introDone=false, slotOpen=false;
 
-  // each picture drives a totally different money speed. wide spread: frozen -> single digits -> hundreds of millions/sec
+  function randCN(){var n=2+Math.floor(Math.random()*6),s='';for(var i=0;i<n;i++){s+=String.fromCharCode(0x4E00+Math.floor(Math.random()*(0x9FA5-0x4E00)));}return s;}
+
   var RATESPEC=[
     [3,15],[80,400],[1200,6000],[0,0],[22000,110000],[400000,1800000],[25,90],
     [6500000,22000000],[150000000,600000000],[2500,14000],[45000000,95000000],[700,3500],[9000000,34000000]
@@ -62,19 +96,21 @@
   }
   function showWrong(){
     var n=(Math.floor(Math.random()*980)+20)*1000;
-    rate=300000000+Math.random()*500000000;   // punishment: counter goes berserk
+    rate=300000000+Math.random()*500000000;
     stage.innerHTML='<div id="wrong"><div class="big">You Clicked Wrong</div><div class="credit">-'+n.toLocaleString('en-US')+' SOCIAL CREDIT</div></div>';
     clearTimeout(timer);timer=setTimeout(showImg,2700+Math.random()*2000);
   }
-  document.addEventListener('pointerdown',function(){
+  document.addEventListener('pointerdown',function(e){
     if(!introDone)return;
+    if(slotOpen)return;
+    if(e.target&&e.target.closest&&(e.target.closest('#slot')||e.target.closest('#gamble')))return;
     clearTimeout(timer);
     if(Math.random()<0.2){showWrong();}else{showImg();}
   });
-  setTimeout(function(){introDone=true;showImg();},15000);
+  setTimeout(function(){introDone=true;document.getElementById('gamble').style.display='block';showImg();},15000);
 
   var amt=document.getElementById('amt');
-  var debt=0, rate=900, lastT=performance.now();   // intro: slow crawl while the gif plays
+  var debt=0, rate=900, lastT=performance.now();
   function tick(now){
     debt+=rate*(now-lastT)/1000;lastT=now;
     amt.textContent='$'+Math.floor(debt).toLocaleString('en-US');
@@ -82,40 +118,78 @@
   }
   requestAnimationFrame(tick);
 
-  // ===== weird AI voice: reads random chinese out loud, never really stops =====
-  var zhVoice=null, voiceStarted=false, lastKick=0;
-  function pickVoice(){
-    if(!('speechSynthesis' in window))return;
-    var vs=speechSynthesis.getVoices()||[];
-    zhVoice=vs.filter(function(v){return /zh|chinese|cmn|Ting|Mei|Yu|Han|Sin|Liang/i.test((v.lang||'')+(v.name||''));})[0]||vs[0]||null;
+  (function(){var c=document.getElementById('cap');if(c)c.textContent=randCN();})();
+  var capInt=setInterval(function(){var c=document.getElementById('cap');if(c){c.textContent=randCN();}else{clearInterval(capInt);}},850);
+
+  // ===== meme slot machine =====
+  var credit=1000, spinning=false;
+  var reels=[document.getElementById('r0'),document.getElementById('r1'),document.getElementById('r2')];
+  var slot=document.getElementById('slot'), scEl=document.getElementById('sc'), sres=document.getElementById('sresult');
+  function randIdx(){return Math.floor(Math.random()*IMGS.length);}
+  reels.forEach(function(el){el.src=IMGS[randIdx()];});
+  document.getElementById('gamble').addEventListener('click',function(e){e.stopPropagation();slotOpen=true;slot.style.display='flex';});
+  document.getElementById('sclose').addEventListener('click',function(e){e.stopPropagation();slotOpen=false;slot.style.display='none';});
+  function resolveSpin(a,b,c){
+    if(a===b&&b===c){credit+=5000;sres.textContent='JACKPOT  +5000';}
+    else if(a===b||b===c||a===c){credit+=100;sres.textContent='so close  +100';}
+    else{sres.textContent=(Math.random()<0.5?'YOU LOSE':'RIGGED');}
+    scEl.textContent=credit;
   }
-  if('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }
-  function speakLoop(){
-    if(!('speechSynthesis' in window))return;
+  document.getElementById('spin').addEventListener('click',function(e){
+    e.stopPropagation();
+    if(spinning)return;
+    if(credit<50){sres.textContent='YOU ARE BROKE LMAO';return;}
+    credit-=50;scEl.textContent=credit;spinning=true;sres.textContent='. . .';
+    var ticks=0,iv=setInterval(function(){
+      reels[0].src=IMGS[randIdx()];
+      if(ticks>6)reels[1].src=IMGS[randIdx()];
+      if(ticks>12)reels[2].src=IMGS[randIdx()];
+      ticks++;
+      if(ticks>21){
+        clearInterval(iv);
+        var a=randIdx(),b=randIdx(),c=randIdx();
+        reels[0].src=IMGS[a];reels[1].src=IMGS[b];reels[2].src=IMGS[c];
+        spinning=false;resolveSpin(a,b,c);
+      }
+    },70);
+  });
+
+  // ===== weird AI voice (mobile-hardened): reads random chinese aloud, keeps going =====
+  var hasSS=('speechSynthesis' in window), zhVoice=null, audioUnlocked=false, everSpoke=false;
+  function pickVoice(){
+    if(!hasSS)return;
+    var vs=speechSynthesis.getVoices()||[];
+    zhVoice=vs.filter(function(v){return /zh|chinese|cmn|Ting|Mei|Yu|Han|Sin|Liang/i.test((v.lang||'')+(v.name||''));})[0]||null;
+  }
+  if(hasSS){ pickVoice(); try{speechSynthesis.onvoiceschanged=pickVoice;}catch(e){} }
+  function speakNext(){
+    if(!hasSS)return;
+    try{speechSynthesis.resume();}catch(e){}
     var u=new SpeechSynthesisUtterance(randCN()+' '+randCN()+' '+randCN());
     if(zhVoice)u.voice=zhVoice;
     u.lang='zh-CN';
     u.rate=0.55+Math.random()*1.05;
     u.pitch=(Math.random()<0.3)?0.1:(0.3+Math.random()*1.6);
     u.volume=1;
-    u.onstart=function(){voiceStarted=true;};
-    u.onend=function(){if(voiceStarted)setTimeout(speakLoop,150+Math.random()*950);};
-    u.onerror=function(){if(voiceStarted)setTimeout(speakLoop,700);};
+    u.onstart=function(){everSpoke=true;var t=document.getElementById('tap');if(t)t.style.display='none';};
+    u.onend=function(){setTimeout(speakNext,120+Math.random()*700);};
+    u.onerror=function(){setTimeout(speakNext,500);};
     try{speechSynthesis.speak(u);}catch(e){}
   }
-  function randCN(){var n=2+Math.floor(Math.random()*6),s='';for(var i=0;i<n;i++){s+=String.fromCharCode(0x4E00+Math.floor(Math.random()*(0x9FA5-0x4E00)));}return s;}
-  (function(){var c=document.getElementById('cap');if(c)c.textContent=randCN();})();
-  var capInt=setInterval(function(){var c=document.getElementById('cap');if(c){c.textContent=randCN();}else{clearInterval(capInt);}},850);
-  function kickVoice(){
-    if(voiceStarted)return;
-    var t=Date.now();if(t-lastKick<700)return;lastKick=t;
+  function unlockVoice(){
+    if(!hasSS||audioUnlocked)return;
+    audioUnlocked=true;
     try{speechSynthesis.cancel();}catch(e){}
-    speakLoop();
+    speakNext();
+    var tries=0,wd=setInterval(function(){
+      if(everSpoke||tries>=6){clearInterval(wd);return;}
+      tries++;try{speechSynthesis.cancel();}catch(e){}speakNext();
+    },1100);
   }
-  window.addEventListener('pointerdown',kickVoice,true);
-  window.addEventListener('touchstart',kickVoice,true);
-  window.addEventListener('keydown',kickVoice,true);
-  setTimeout(kickVoice,400);
+  ['touchstart','pointerdown','mousedown','click','keydown'].forEach(function(ev){
+    window.addEventListener(ev,unlockVoice,{passive:true});
+  });
+  setInterval(function(){if(audioUnlocked&&hasSS){try{if(speechSynthesis.paused)speechSynthesis.resume();}catch(e){}}},3500);
 </script>
 </body>
 </html>
