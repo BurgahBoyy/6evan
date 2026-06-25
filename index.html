@@ -45,22 +45,26 @@
   var stage=document.getElementById('stage');
   var timer, last=-1, introDone=false;
 
-  function randCN(){var n=2+Math.floor(Math.random()*6),s='';for(var i=0;i<n;i++){s+=String.fromCharCode(0x4E00+Math.floor(Math.random()*(0x9FA5-0x4E00)));}return s;}
-  (function(){var c=document.getElementById('cap');if(c)c.textContent=randCN();})();
-  var capInt=setInterval(function(){var c=document.getElementById('cap');if(c){c.textContent=randCN();}else{clearInterval(capInt);}},850);
+  // each picture drives a totally different money speed. wide spread: frozen -> single digits -> hundreds of millions/sec
+  var RATESPEC=[
+    [3,15],[80,400],[1200,6000],[0,0],[22000,110000],[400000,1800000],[25,90],
+    [6500000,22000000],[150000000,600000000],[2500,14000],[45000000,95000000],[700,3500],[9000000,34000000]
+  ];
+  function setRateForImage(i){var s=RATESPEC[i]||[200,5000];rate=Math.floor(s[0]+Math.random()*(s[1]-s[0]));}
 
-  function schedule(){clearTimeout(timer);timer=setTimeout(showImg,2700+Math.random()*2000);}
   function showImg(){
     var i=Math.floor(Math.random()*IMGS.length);
     if(i===last&&IMGS.length>1){i=(i+1)%IMGS.length;}
     last=i;
+    setRateForImage(i);
     stage.innerHTML='<img class="full" src="'+IMGS[i]+'">';
-    schedule();
+    clearTimeout(timer);timer=setTimeout(showImg,2700+Math.random()*2000);
   }
   function showWrong(){
     var n=(Math.floor(Math.random()*980)+20)*1000;
+    rate=300000000+Math.random()*500000000;   // punishment: counter goes berserk
     stage.innerHTML='<div id="wrong"><div class="big">You Clicked Wrong</div><div class="credit">-'+n.toLocaleString('en-US')+' SOCIAL CREDIT</div></div>';
-    schedule();
+    clearTimeout(timer);timer=setTimeout(showImg,2700+Math.random()*2000);
   }
   document.addEventListener('pointerdown',function(){
     if(!introDone)return;
@@ -70,19 +74,7 @@
   setTimeout(function(){introDone=true;showImg();},15000);
 
   var amt=document.getElementById('amt');
-  var debt=0, rate=25, lastT=performance.now();
-  function bump(){
-    var r=Math.random();
-    if(r<0.22){rate=1+Math.random()*40;}
-    else if(r<0.40){rate=150+Math.random()*2500;}
-    else if(r<0.58){rate=9000+Math.random()*120000;}
-    else if(r<0.74){rate=600000+Math.random()*11000000;}
-    else if(r<0.85){rate=25000000+Math.random()*220000000;}
-    else if(r<0.93){rate=0;}
-    else{debt+=Math.floor(Math.random()*8000000)+40000;rate=30+Math.random()*600;}
-    setTimeout(bump,220+Math.random()*2700);
-  }
-  bump();
+  var debt=0, rate=900, lastT=performance.now();   // intro: slow crawl while the gif plays
   function tick(now){
     debt+=rate*(now-lastT)/1000;lastT=now;
     amt.textContent='$'+Math.floor(debt).toLocaleString('en-US');
@@ -111,6 +103,9 @@
     u.onerror=function(){if(voiceStarted)setTimeout(speakLoop,700);};
     try{speechSynthesis.speak(u);}catch(e){}
   }
+  function randCN(){var n=2+Math.floor(Math.random()*6),s='';for(var i=0;i<n;i++){s+=String.fromCharCode(0x4E00+Math.floor(Math.random()*(0x9FA5-0x4E00)));}return s;}
+  (function(){var c=document.getElementById('cap');if(c)c.textContent=randCN();})();
+  var capInt=setInterval(function(){var c=document.getElementById('cap');if(c){c.textContent=randCN();}else{clearInterval(capInt);}},850);
   function kickVoice(){
     if(voiceStarted)return;
     var t=Date.now();if(t-lastKick<700)return;lastKick=t;
