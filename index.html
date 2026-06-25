@@ -12,10 +12,13 @@
   .full{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
   #goldlayer{position:fixed;inset:0;z-index:84;display:none;pointer-events:none;background:radial-gradient(circle,rgba(255,205,0,.10),rgba(255,160,0,.28));mix-blend-mode:overlay}
 
-  #intro{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;gap:22px;padding:24px}
-  #intro img{width:min(58vw,360px);height:auto;image-rendering:pixelated}
-  #cap{font-family:'Microsoft YaHei','SimHei','Noto Sans SC','PingFang SC',sans-serif;color:#fff;
-    font-size:clamp(38px,9vw,120px);font-weight:900;text-align:center;line-height:1.04;text-shadow:4px 4px 0 #000;word-break:break-all}
+  #introbg{position:fixed;inset:0;z-index:3;background:#000;transition:opacity 1.3s ease}
+  #mascot{position:fixed;z-index:5;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:14px;pointer-events:none;transition:left 1.8s ease,top 1.8s ease}
+  #mgif{image-rendering:pixelated;display:block;width:min(60vw,340px);transition:width 1.8s ease}
+  #cap{font-family:'Microsoft YaHei','SimHei','Noto Sans SC','PingFang SC',sans-serif;color:#fff;font-weight:900;text-align:center;line-height:1.04;text-shadow:4px 4px 0 #000;word-break:break-all;font-size:clamp(30px,7.5vw,90px);max-width:90vw;transition:font-size 1.8s ease,max-width 1.8s ease}
+  #mascot.docked{left:19%;top:50%}
+  #mascot.docked #mgif{width:min(30vw,150px)}
+  #mascot.docked #cap{font-size:clamp(13px,3.2vw,26px);max-width:40vw}
 
   #wrong{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;text-align:center;gap:14px;padding:20px}
   #wrong .big{font-family:Impact,'Arial Black',sans-serif;font-size:clamp(42px,12vw,160px);color:#ff1515;line-height:.92;transform:rotate(-3deg);text-shadow:5px 5px 0 #4a0000;letter-spacing:1px;text-transform:uppercase}
@@ -29,11 +32,11 @@
   #sound{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translateX(-50%);z-index:96;font-family:Impact,'Arial Black',sans-serif;font-size:clamp(15px,4vw,26px);letter-spacing:1px;color:#000;background:#19e36a;border:4px solid #fff;border-radius:40px;padding:7px 18px;cursor:pointer;box-shadow:0 0 0 4px #000,4px 4px 0 #000;animation:pulse .7s ease-in-out infinite}
   @keyframes pulse{50%{transform:translateX(-50%) scale(1.08)}}
 
-  #debt{position:fixed;z-index:50;pointer-events:none;line-height:1;font-family:Impact,'Arial Black',sans-serif;left:calc(16px + env(safe-area-inset-left));bottom:calc(14px + env(safe-area-inset-bottom));max-width:64vw;text-shadow:3px 3px 0 #000,0 0 9px #000}
+  #debt{position:fixed;z-index:50;pointer-events:none;line-height:1;font-family:Impact,'Arial Black',sans-serif;right:calc(14px + env(safe-area-inset-right));bottom:calc(14px + env(safe-area-inset-bottom));max-width:60vw;text-align:right;text-shadow:3px 3px 0 #000,0 0 9px #000}
   #debt .lbl{font-size:clamp(12px,2.2vw,24px);letter-spacing:.4px;color:#ff5151}
-  #debt .t{font-size:clamp(36px,9vw,110px);margin-top:3px;color:#ff1212;white-space:nowrap}
+  #debt .t{font-size:clamp(34px,8.5vw,104px);margin-top:3px;color:#ff1212;white-space:nowrap}
 
-  #arcade{position:fixed;right:calc(14px + env(safe-area-inset-right));bottom:calc(18px + env(safe-area-inset-bottom));z-index:66;display:none;font-family:Impact,'Arial Black',sans-serif;font-size:clamp(18px,4.6vw,34px);letter-spacing:1px;color:#fff;background:#d4061a;border:4px solid #fff;border-radius:10px;padding:8px 16px;cursor:pointer;box-shadow:0 0 0 4px #000,6px 6px 0 #000;transform:rotate(2deg);animation:blink .55s steps(2) infinite}
+  #arcade{position:fixed;left:calc(14px + env(safe-area-inset-left));bottom:calc(18px + env(safe-area-inset-bottom));z-index:66;display:none;font-family:Impact,'Arial Black',sans-serif;font-size:clamp(18px,4.6vw,34px);letter-spacing:1px;color:#fff;background:#d4061a;border:4px solid #fff;border-radius:10px;padding:8px 16px;cursor:pointer;box-shadow:0 0 0 4px #000,6px 6px 0 #000;transform:rotate(2deg);animation:blink .55s steps(2) infinite}
   @keyframes blink{50%{background:#ffd400;color:#000}}
 
   #hub{position:fixed;inset:0;z-index:92;display:none;flex-direction:column;background:rgba(0,0,0,.97);padding:10px 12px calc(14px + env(safe-area-inset-bottom));overflow-y:auto}
@@ -60,7 +63,9 @@
 <body>
 <div id="bg"></div>
 <div id="goldlayer"></div>
-<div id="stage"><div id="intro"><img src="assets/intro.gif" alt=""><div id="cap"></div></div></div>
+<div id="stage"></div>
+<div id="introbg"></div>
+<div id="mascot"><img id="mgif" src="assets/intro.gif" alt=""><div id="cap"></div></div>
 <div id="corner">6evan.com property of evan vasquez always</div>
 <div id="hud"><span class="r" id="hudr">Peasant</span> · <span id="huds">SC 1,000</span></div>
 <button id="sound">TAP FOR SOUND</button>
@@ -77,7 +82,6 @@
     <button data-t="slots">SLOTS</button>
     <button data-t="market">MARKET</button>
   </div>
-
   <div class="panel on" id="p-grind">
     <div class="stat">TAP OBAMA FOR SOCIAL CREDIT</div>
     <img id="obama" src="assets/img12.jpeg" alt="">
@@ -85,14 +89,12 @@
     <button class="shopbtn" id="buyTap">STRONGER TAPS</button>
     <button class="shopbtn" id="buyCps">AUTO GRINDER</button>
   </div>
-
   <div class="panel" id="p-slots">
     <div class="stat">6 EVAN CASINO</div>
     <div id="reels"><img id="r0" alt=""><img id="r1" alt=""><img id="r2" alt=""></div>
     <div id="sresult">spin to win (you wont)</div>
     <button class="shopbtn" id="spin">SPIN  -50</button>
   </div>
-
   <div class="panel" id="p-market">
     <div class="mhead">voice &amp; visual</div>
     <button class="shopbtn" id="m-gold">GOLD MODE  -5,000</button>
@@ -115,7 +117,6 @@
   var timer, last=-1, introDone=false, hubOpen=false;
   function fmt(n){return Math.floor(n).toLocaleString('en-US');}
 
-  // ---------- persistent economy ----------
   var SKEY='6evan_v1';
   var RANKS=['Peasant','Comrade','Officer','Commissar','Supreme Leader'];
   var RANKCOST=[0,2000,8000,30000,120000];
@@ -128,7 +129,6 @@
 
   function randCN(){var n=2+Math.floor(Math.random()*6),s='';for(var i=0;i<n;i++){s+=String.fromCharCode(0x4E00+Math.floor(Math.random()*(0x9FA5-0x4E00)));}return s;}
 
-  // ---------- main meme experience ----------
   var RATESPEC=[[3,15],[80,400],[1200,6000],[0,0],[22000,110000],[400000,1800000],[25,90],[6500000,22000000],[150000000,600000000],[2500,14000],[45000000,95000000],[700,3500],[9000000,34000000]];
   function setRateForImage(i){var s=RATESPEC[i]||[200,5000];rate=Math.floor(s[0]+Math.random()*(s[1]-s[0]));if(S.turbo)rate*=3;}
   function showImg(){
@@ -149,17 +149,24 @@
     clearTimeout(timer);
     if(Math.random()<0.2){showWrong();}else{showImg();}
   });
-  setTimeout(function(){introDone=true;document.getElementById('arcade').style.display='block';showImg();},15000);
+  // full-screen mascot for 3s, then slide him to the left-middle and start the memes
+  setTimeout(function(){
+    introDone=true;
+    document.getElementById('mascot').classList.add('docked');
+    var ib=document.getElementById('introbg');ib.style.opacity='0';setTimeout(function(){ib.style.display='none';},1400);
+    document.getElementById('arcade').style.display='block';
+    showImg();
+  },3000);
 
   var amt=document.getElementById('amt');
   var debt=0, rate=900, lastT=performance.now();
   function tick(now){debt+=rate*(now-lastT)/1000;lastT=now;amt.textContent='$'+fmt(debt);requestAnimationFrame(tick);}
   requestAnimationFrame(tick);
 
+  // chinese caption under the mascot, cycling forever
   (function(){var c=document.getElementById('cap');if(c)c.textContent=randCN();})();
-  var capInt=setInterval(function(){var c=document.getElementById('cap');if(c){c.textContent=randCN();}else{clearInterval(capInt);}},850);
+  setInterval(function(){var c=document.getElementById('cap');if(c)c.textContent=randCN();},850);
 
-  // ---------- HUD + UI refresh ----------
   var hudr=document.getElementById('hudr'),huds=document.getElementById('huds'),
       hbal=document.getElementById('hbal'),hrank=document.getElementById('hrank'),
       gtap=document.getElementById('gtap'),gcps=document.getElementById('gcps'),
@@ -178,7 +185,6 @@
     else{rb.className='shopbtn owned';rb.textContent='SUPREME LEADER (MAX)';}
   }
 
-  // ---------- grind (obama clicker) ----------
   function floatPlus(x,y,t){var d=document.createElement('div');d.className='flt';d.textContent='+'+fmt(t);d.style.left=x+'px';d.style.top=y+'px';document.body.appendChild(d);requestAnimationFrame(function(){d.style.transform='translateY(-60px)';d.style.opacity='0';});setTimeout(function(){d.remove();},750);}
   var lastSave=0;
   document.getElementById('obama').addEventListener('click',function(e){
@@ -187,11 +193,10 @@
   });
   buyTap.addEventListener('click',function(e){e.stopPropagation();var c=tapCost();if(S.sc<c){flash(buyTap,'NEED '+fmt(c));return;}S.sc-=c;S.clickPow+=1;save();refresh();});
   buyCps.addEventListener('click',function(e){e.stopPropagation();var c=cpsCost();if(S.sc<c){flash(buyCps,'NEED '+fmt(c));return;}S.sc-=c;S.cps+=1;save();refresh();});
-  function flash(btn,msg){var o=btn.textContent;btn.textContent=msg;setTimeout(function(){refresh();},900);}
+  function flash(btn,msg){btn.textContent=msg;setTimeout(function(){refresh();},900);}
   setInterval(function(){if(S.cps>0){S.sc+=S.cps;refresh();}},1000);
   setInterval(save,5000);
 
-  // ---------- slots ----------
   var reels=[document.getElementById('r0'),document.getElementById('r1'),document.getElementById('r2')],spinning=false;
   var sres=document.getElementById('sresult');
   function randIdx(){return Math.floor(Math.random()*IMGS.length);}
@@ -211,7 +216,6 @@
     },70);
   });
 
-  // ---------- market ----------
   function applyGold(){document.getElementById('goldlayer').style.display=S.gold?'block':'none';}
   var glitchTimer=null;
   function applyGlitch(){if(S.glitch&&!glitchTimer){glitchTimer=setInterval(function(){if(Math.random()<0.45){stage.style.filter='invert(1) hue-rotate(90deg) saturate(3)';setTimeout(function(){stage.style.filter='';},110);}},1500);}}
@@ -226,7 +230,6 @@
   document.getElementById('m-d2').addEventListener('click',function(e){e.stopPropagation();forgive(100000000,20000,'m-d2');});
   document.getElementById('m-d3').addEventListener('click',function(e){e.stopPropagation();forgive(debt,100000,'m-d3');});
 
-  // ---------- hub open/close + tabs ----------
   var hub=document.getElementById('hub');
   document.getElementById('arcade').addEventListener('click',function(e){e.stopPropagation();hubOpen=true;hub.style.display='flex';refresh();});
   document.getElementById('hx').addEventListener('click',function(e){e.stopPropagation();hubOpen=false;hub.style.display='none';});
@@ -237,10 +240,8 @@
     ['grind','slots','market'].forEach(function(t){document.getElementById('p-'+t).className='panel'+(t===btn.getAttribute('data-t')?' on':'');});
   });});
 
-  // apply persisted effects + first paint
   applyGold();applyGlitch();refresh();
 
-  // ---------- weird AI voice (mobile-correct) ----------
   var hasSS=('speechSynthesis' in window), zhVoice=null, everSpoke=false;
   function pickVoice(){if(!hasSS)return;var vs=speechSynthesis.getVoices()||[];zhVoice=vs.filter(function(v){return /zh|chinese|cmn|Ting|Mei|Yu|Han|Sin|Liang/i.test((v.lang||'')+(v.name||''));})[0]||null;}
   if(hasSS){pickVoice();try{speechSynthesis.onvoiceschanged=pickVoice;}catch(e){}}
