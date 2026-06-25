@@ -89,6 +89,38 @@
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
+
+  // ===== weird AI voice: reads random chinese out loud, never really stops =====
+  var zhVoice=null, voiceStarted=false, lastKick=0;
+  function pickVoice(){
+    if(!('speechSynthesis' in window))return;
+    var vs=speechSynthesis.getVoices()||[];
+    zhVoice=vs.filter(function(v){return /zh|chinese|cmn|Ting|Mei|Yu|Han|Sin|Liang/i.test((v.lang||'')+(v.name||''));})[0]||vs[0]||null;
+  }
+  if('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }
+  function speakLoop(){
+    if(!('speechSynthesis' in window))return;
+    var u=new SpeechSynthesisUtterance(randCN()+' '+randCN()+' '+randCN());
+    if(zhVoice)u.voice=zhVoice;
+    u.lang='zh-CN';
+    u.rate=0.55+Math.random()*1.05;
+    u.pitch=(Math.random()<0.3)?0.1:(0.3+Math.random()*1.6);
+    u.volume=1;
+    u.onstart=function(){voiceStarted=true;};
+    u.onend=function(){if(voiceStarted)setTimeout(speakLoop,150+Math.random()*950);};
+    u.onerror=function(){if(voiceStarted)setTimeout(speakLoop,700);};
+    try{speechSynthesis.speak(u);}catch(e){}
+  }
+  function kickVoice(){
+    if(voiceStarted)return;
+    var t=Date.now();if(t-lastKick<700)return;lastKick=t;
+    try{speechSynthesis.cancel();}catch(e){}
+    speakLoop();
+  }
+  window.addEventListener('pointerdown',kickVoice,true);
+  window.addEventListener('touchstart',kickVoice,true);
+  window.addEventListener('keydown',kickVoice,true);
+  setTimeout(kickVoice,400);
 </script>
 </body>
 </html>
