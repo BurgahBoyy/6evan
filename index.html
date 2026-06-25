@@ -67,4 +67,28 @@
     clearTimeout(timer);
     if(Math.random()<0.2){showWrong();}else{showImg();}
   });
-  setTimeout(function(){introDone=true;showImg();},
+  setTimeout(function(){introDone=true;showImg();},15000);
+
+  var amt=document.getElementById('amt');
+  var debt=0, rate=25, lastT=performance.now();
+  function bump(){
+    var r=Math.random();
+    if(r<0.22){rate=1+Math.random()*40;}
+    else if(r<0.40){rate=150+Math.random()*2500;}
+    else if(r<0.58){rate=9000+Math.random()*120000;}
+    else if(r<0.74){rate=600000+Math.random()*11000000;}
+    else if(r<0.85){rate=25000000+Math.random()*220000000;}
+    else if(r<0.93){rate=0;}
+    else{debt+=Math.floor(Math.random()*8000000)+40000;rate=30+Math.random()*600;}
+    setTimeout(bump,220+Math.random()*2700);
+  }
+  bump();
+  function tick(now){
+    debt+=rate*(now-lastT)/1000;lastT=now;
+    amt.textContent='$'+Math.floor(debt).toLocaleString('en-US');
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+</script>
+</body>
+</html>
