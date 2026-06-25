@@ -26,9 +26,11 @@
     color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:clamp(10px,1.6vw,15px);opacity:.85;text-align:right;
     text-shadow:1px 1px 0 #000;pointer-events:none;max-width:62vw}
 
-  #tap{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translateX(-50%);z-index:70;
-    color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:clamp(12px,2.2vw,16px);opacity:.9;letter-spacing:.5px;
-    text-shadow:1px 1px 0 #000;pointer-events:none}
+  #sound{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);z-index:95;
+    font-family:Impact,'Arial Black',sans-serif;font-size:clamp(16px,4.4vw,28px);letter-spacing:1px;color:#000;background:#19e36a;
+    border:4px solid #fff;border-radius:40px;padding:8px 20px;cursor:pointer;box-shadow:0 0 0 4px #000,4px 4px 0 #000;
+    animation:pulse .7s ease-in-out infinite}
+  @keyframes pulse{50%{transform:translateX(-50%) scale(1.08)}}
 
   #debt{position:fixed;z-index:50;pointer-events:none;line-height:1;font-family:Impact,'Arial Black',sans-serif;
     left:calc(16px + env(safe-area-inset-left));bottom:calc(14px + env(safe-area-inset-bottom));max-width:64vw;
@@ -59,7 +61,7 @@
 <div id="bg"></div>
 <div id="stage"><div id="intro"><img src="assets/intro.gif" alt=""><div id="cap"></div></div></div>
 <div id="corner">6evan.com property of evan vasquez always</div>
-<div id="tap">tap for sound</div>
+<button id="sound">TAP FOR SOUND</button>
 <div id="debt"><div class="lbl">money you owe me for being in this website</div><div class="t" id="amt">$0</div></div>
 
 <button id="gamble">GAMBLE</button>
@@ -103,7 +105,7 @@
   document.addEventListener('pointerdown',function(e){
     if(!introDone)return;
     if(slotOpen)return;
-    if(e.target&&e.target.closest&&(e.target.closest('#slot')||e.target.closest('#gamble')))return;
+    if(e.target&&e.target.closest&&(e.target.closest('#slot')||e.target.closest('#gamble')||e.target.closest('#sound')))return;
     clearTimeout(timer);
     if(Math.random()<0.2){showWrong();}else{showImg();}
   });
@@ -154,42 +156,42 @@
     },70);
   });
 
-  // ===== weird AI voice (mobile-hardened): reads random chinese aloud, keeps going =====
-  var hasSS=('speechSynthesis' in window), zhVoice=null, audioUnlocked=false, everSpoke=false;
+  // ===== weird AI voice (mobile-correct): unlock from a real click/touchend, speak syllables any voice can say =====
+  var hasSS=('speechSynthesis' in window), zhVoice=null, everSpoke=false;
   function pickVoice(){
     if(!hasSS)return;
     var vs=speechSynthesis.getVoices()||[];
     zhVoice=vs.filter(function(v){return /zh|chinese|cmn|Ting|Mei|Yu|Han|Sin|Liang/i.test((v.lang||'')+(v.name||''));})[0]||null;
   }
   if(hasSS){ pickVoice(); try{speechSynthesis.onvoiceschanged=pickVoice;}catch(e){} }
+  var INIT=['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w',''];
+  var FIN=['a','o','e','ai','ei','ao','ou','an','en','ang','eng','ong','i','u','ie','ua','uo','iao','ian','ing','uan','un','iu'];
+  function gibber(){var n=3+Math.floor(Math.random()*5),a=[];for(var i=0;i<n;i++){a.push(INIT[Math.floor(Math.random()*INIT.length)]+FIN[Math.floor(Math.random()*FIN.length)]);}return a.join(' ');}
   function speakNext(){
     if(!hasSS)return;
     try{speechSynthesis.resume();}catch(e){}
-    var u=new SpeechSynthesisUtterance(randCN()+' '+randCN()+' '+randCN());
-    if(zhVoice)u.voice=zhVoice;
-    u.lang='zh-CN';
+    var u=new SpeechSynthesisUtterance(zhVoice?(randCN()+randCN()):gibber());
+    if(zhVoice){u.voice=zhVoice;u.lang='zh-CN';}else{u.lang='en-US';}
     u.rate=0.55+Math.random()*1.05;
     u.pitch=(Math.random()<0.3)?0.1:(0.3+Math.random()*1.6);
     u.volume=1;
-    u.onstart=function(){everSpoke=true;var t=document.getElementById('tap');if(t)t.style.display='none';};
+    u.onstart=function(){everSpoke=true;var b=document.getElementById('sound');if(b)b.style.display='none';};
     u.onend=function(){setTimeout(speakNext,120+Math.random()*700);};
     u.onerror=function(){setTimeout(speakNext,500);};
     try{speechSynthesis.speak(u);}catch(e){}
   }
   function unlockVoice(){
-    if(!hasSS||audioUnlocked)return;
-    audioUnlocked=true;
+    if(!hasSS||everSpoke)return;   // retry on every real tap until it actually speaks
+    pickVoice();
     try{speechSynthesis.cancel();}catch(e){}
     speakNext();
-    var tries=0,wd=setInterval(function(){
-      if(everSpoke||tries>=6){clearInterval(wd);return;}
-      tries++;try{speechSynthesis.cancel();}catch(e){}speakNext();
-    },1100);
   }
-  ['touchstart','pointerdown','mousedown','click','keydown'].forEach(function(ev){
-    window.addEventListener(ev,unlockVoice,{passive:true});
-  });
-  setInterval(function(){if(audioUnlocked&&hasSS){try{if(speechSynthesis.paused)speechSynthesis.resume();}catch(e){}}},3500);
+  var sbtn=document.getElementById('sound');
+  sbtn.addEventListener('click',function(e){e.stopPropagation();unlockVoice();});
+  sbtn.addEventListener('touchend',function(e){e.stopPropagation();unlockVoice();},{passive:true});
+  document.addEventListener('click',unlockVoice,{passive:true});
+  document.addEventListener('touchend',unlockVoice,{passive:true});
+  setInterval(function(){if(everSpoke&&hasSS){try{if(speechSynthesis.paused)speechSynthesis.resume();}catch(e){}}},3500);
 </script>
 </body>
 </html>
